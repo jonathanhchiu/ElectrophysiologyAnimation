@@ -1,6 +1,6 @@
 bl_info = {
-	"name": "Rotate Camera",
-	"description": "Camera rotation animation",
+	"name": "Camera Orbit",
+	"description": "",
 	"author": "Tommy Truong",
 	"version": (1,0),
 	"category": "object",
@@ -9,17 +9,22 @@ bl_info = {
 
 import bpy
 
-#Set to object mode
+# Set to object mode
 bpy.ops.object.mode_set(mode='OBJECT')
 
-#Get empty object
+# Create an empty object
+bpy.ops.object.empty_add(type='PLAIN_AXES')
+
+# Set empty object as
 obj = bpy.data.objects['Empty']
 
 #Parent empty to object
+bpy.ops.outliner.parent_drop(child="Empty", parent="Cube")
+
 #Parent Camera to empty
 
 #Set active object
-mesh = obj.data
+
 bpy.context.scene.objects.active = obj
 
 #Deselect active object
@@ -32,18 +37,19 @@ ks.active = ks['Rotation']
 i = 0.0
 eval_time = 10
 
-while i < 6.5:
+# 360 deg = 6.283 radians
+while i < 6.3:
 
-    	#Move cursor to next keyframe location
+	# Jump to the next keyframe location
     bpy.context.scene.frame_set(eval_time)
 
-    	#Rotate
+	# Move camera by 0.1 rads
     obj.rotation_euler[2] = i
 
     #Keyframe current color
     bpy.ops.anim.keyframe_insert()
 
-    	#Rotate every 0.1 rads
+	#Rotate every 0.1 rads
     i += 0.1
 
     #1 keyframe per 10 frames
