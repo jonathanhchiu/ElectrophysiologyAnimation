@@ -5,15 +5,20 @@ import time
 # Arbitrary names
 VC_NAME = 'MyVertexColorLayer'                      # Vertex Color Layer
 KS_NAME = 'MyNewKeyingSet'                          # Keying Set
+SURFACE = 'surface'
 
 # Time constants
-EVAL_TIME = 10                                      # Time between frames
-MS = 170                                            # Times in colormap
+FRAME_NUM = 10                                      # Time between frames
+TIME = 170                                            # Times in colormap
+KEYFRAMES = 2
 
 # Blender constants
 scn = bpy.context.scene                             # Active scene
 obj = bpy.context.active_object                     # Active object 
 mesh = obj.data                                     # Active object's mesh
+
+# Filepaths
+FILEPATH = '/Users/cmrg/Desktop/500ms.npy'
 
 
 
@@ -78,40 +83,40 @@ print("Mapping created between local and global vertices.")
 total_vertices = len(mesh.vertex_colors[VC_NAME].data)
 
 # Add each local vertex's color attribute to the keying set
-for vertex in range(0, total_vertices):
-    if 'surface' in vgroups[reducedMap[vertex]]:
-        print('Datapath: ', vertex)
-        data_path = "vertex_colors[\"%s\"].data[%s].color" %(VC_NAME, vertex)
-        #settings that should be keyframed together: id and path
+for local_vertex in range(0, total_vertices):
+    if 'surface' in vgroups[reducedMap[local_vertex]]:
+        data_path = "vertex_colors[\"%s\"].data[%s].color" %(VC_NAME, local_vertex)
         keying_set.paths.add(mesh, data_path)
+        print("Data path added for vertex: " + str(local_vertex))
 
-# Set new material
-print('Making new material')
+
+
+# Create a new material and assign it to an object
 mat = bpy.data.materials.new(name="Material")
+print('Making new material.')
 
 # Assign it to object
 if mesh.materials:
-    print('Add material to obj')
-    # assign to 1st material slot
+    print('Adding material to object.')
     mesh.materials[0] = mat
+
 else:
-    # no slots
-    print('Append material to obj')
+    print('Append material to object.')
     mesh.materials.append(mat)
 
-bpy.context.object.active_material.use_nodes = True
 
-print('Grabbing nodes')
-# get the nodes
+
+# Use nodes to link vertex color layer to material
+bpy.context.object.active_material.use_nodes = True
 nodes = mat.node_tree.nodes
 
-#output = nodes.get("Material Output")
-# clear all nodes to start clean
-print('Removing old nodes')
+# Clear all nodes to start clean
+print('Removing old nodes.')
 for node in nodes:
     nodes.remove(node)
 
-print('Adding nodes')
+print('Adding nodes.')
+
 # create ShaderNodeOutputMaterial node
 node_output = nodes.new(type='ShaderNodeOutputMaterial')
 node_output.location = -300,200
@@ -133,57 +138,53 @@ links = mat.node_tree.links
 link_attr_emission = links.new(node_attr.outputs[0], node_emission.inputs[0])
 link_emisison_output = links.new(node_emission.outputs[0], node_output.inputs[0])
 
-# Select color layer
-vertex_color_layer = mesh.vertex_colors[VC_NAME]
-
-#print("creating keying set")
-#j=0
-#for poly in mesh.polygons:
-#  for idx in poly.vertices:
-#    if 'surface' in vgroups[reducedMap[j]]:
-#            print('adding vertex to keying set #: ', j)
-#            data_path = "vertex_colors[\"%s\"].data[%s].color" %(VC_NAME, j)
-#            #settings that should be keyframed together: id and path
-#            keying_set.paths.add(mesh, data_path)
-#    j += 1
 
 
-print('Loading input file')
-vsoln_colormap = np.load('/Users/cmrg/Desktop/500ms.npy')
-# 150, 160, 170, 180, 190, 200, 210, 220, 230, 240
+# Read in numpy array containing colormap
+print('Loading input file.')
+vsoln_colormap = np.load(FILEPATH)
 
-#start stopwatch
+
+
+# Start time
 start = time.clock()
-print("Starting clock..." + str(start))
+print("Started at: " + str(start))
 
-for i in range(0, 2):
+# Add a keyframe per iteration
+for i in range(0, KEYFRAMES):
+
     #Move cursor to next keyframe location before every iteration
-    bpy.context.scene.frame_set(frame=EVAL_TIME)
+    bpy.context.scene.frame_set(frame=FRAME_NUM)
     
     #Color the vertices
     print('Begin coloring')
-    j = 0
+    local_vertex = 0
     for poly in mesh.polygons:
-        for idx in poly.vertices:
-            if 'surface' in vgroups[reducedMap[j]]:
-                print('Coloring vertex #: ', j)
-                vertex_color_layer.data[j].color = vsoln_colormap[MS,idx][0:3]
-            j += 1
+        for global_vertex in poly.vertices:
+
+            # Only color vertices in the surface
+            if SURFACE in vgroups[reducedMap[local_vertex]]:
+                print('Coloring vertex #: ', local_vertex)
+                vertex_color_layer.data[local_vertex].color = vsoln_colormap[TIME, global_vertex][0:3]
+            local_vertex += 1
 
     #Keyframe current color
-    print("inserting keyframe")
+    print("inserting keyframe.")
     bpy.ops.anim.keyframe_insert()
     
-    #1 keyframe per 10 frames
-    EVAL_TIME += 10
-    
-    MS += 10
+    # Update increments
+    FRAME_NUM += 10
+    TIME += 10
 
-#end stopwatch
+# End time
 end = time.clock()
 print("Stopped at: " + str(end))
-print(end - start)
-
+print("Total time: " + str(end - start))
 print('Finished\n')
+
+
+
 # set to vertex paint mode to see the result
 bpy.ops.object.mode_set(mode='VERTEX_PAINT')
+
+
