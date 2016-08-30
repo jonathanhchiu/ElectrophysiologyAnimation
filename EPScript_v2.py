@@ -9,7 +9,7 @@ SURFACE = 'surface'
 
 # Time constants
 FRAME_NUM = 10                                      # Time between frames
-TIME = 170                                            # Times in colormap
+TIME = 170                                          # Times in colormap
 KEYFRAMES = 2
 
 # Blender constants
@@ -29,15 +29,16 @@ print('Cycles Engine Initiated.')
 
 
 
-
 # Delete existing vertex color layers
 if mesh.vertex_colors:
     print('Deleting old vertex color layers.')
-    for i in range(0, len(mesh.vertex_colors)):
+    for i in range(len(mesh.vertex_colors)):
         bpy.ops.mesh.vertex_color_remove()
 
 # Create a new vertex color layer for the active object
 mesh.vertex_colors.new(VC_NAME)
+color_layer = mesh.vertex_colors[VC_NAME]
+total_local_vertices = len(color_layer.data)
 print('New vertex color layer created.')
 
 
@@ -45,7 +46,7 @@ print('New vertex color layer created.')
 # Delete all other keying sets
 if scn.keying_sets:
     print('Deleting old keying sets')
-    for i in range(0, len(scn.keying_sets)):
+    for i in range(len(scn.keying_sets)):
         bpy.ops.anim.keying_set_remove()
 
 # Create a new keying set
@@ -56,36 +57,27 @@ print("New keying set created.")
 
 
 
-# Create dictionary for each vertex: (vertex, list of vertex groups)
-vgroup_names = {vgroup.index: vgroup.name for vgroup in obj.vertex_groups}
+# Grab the index of the "surface" vertex group
+surface_index = 0
+for group in obj.vertex_groups:
+    if group.name == SURFACE:
+        surface_index = group.index
 
-# create dictionary of vertex group assignments per vertex
-vgroups = {v.index: [vgroup_names[g.group] for g in v.groups] for v in mesh.vertices}
+surface_group = [True if surface_index == group.group else False for vertex in mesh.vertices for group in vertex.groups]
 print("Vertex group dictionary created.")
 
-
-
-# Grab the vertex color layer and initialize array with its length
-vertex_color_layer = mesh.vertex_colors[VC_NAME]
-reducedMap = np.zeros(len(vertex_color_layer.data),dtype='int')
-
 # Create a mapping between the local (for vertex colors) and global vertices
-local_vertex = 0
-for poly in mesh.polygons:
-  for global_vertex in poly.vertices:
-    reducedMap[local_vertex] = global_vertex
-    local_vertex += 1
+vertex_map = [global_vertex for face in mesh.polygons for global_vertex in face.vertices]
 print("Mapping created between local and global vertices.")
 
 
 
-# Grab total number of local vertices for vertex color layer
-total_vertices = len(mesh.vertex_colors[VC_NAME].data)
+# Add color attributes to the keying set
+for local_vertex in range(total_local_vertices):
 
-# Add each local vertex's color attribute to the keying set
-for local_vertex in range(0, total_vertices):
-    if 'surface' in vgroups[reducedMap[local_vertex]]:
-        data_path = "vertex_colors[\"%s\"].data[%s].color" %(VC_NAME, local_vertex)
+    # Check that the vertex is on the surface
+    if surface_group[vertex_map[local_vertex]]:
+        data_path = "vertex_colors[\"%s\"].data[%s].color" % (VC_NAME, local_vertex)
         keying_set.paths.add(mesh, data_path)
         print("Data path added for vertex: " + str(local_vertex))
 
@@ -142,7 +134,7 @@ link_emisison_output = links.new(node_emission.outputs[0], node_output.inputs[0]
 
 # Read in numpy array containing colormap
 print('Loading input file.')
-vsoln_colormap = np.load(FILEPATH)
+colormap = np.load(FILEPATH)
 
 
 
@@ -151,25 +143,22 @@ start = time.clock()
 print("Started at: " + str(start))
 
 # Add a keyframe per iteration
-for i in range(0, KEYFRAMES):
+for frame in range(KEYFRAMES):
 
     #Move cursor to next keyframe location before every iteration
     bpy.context.scene.frame_set(frame=FRAME_NUM)
     
-    #Color the vertices
-    print('Begin coloring')
-    local_vertex = 0
-    for poly in mesh.polygons:
-        for global_vertex in poly.vertices:
+    # Color the vertices in the surface
+    print('Begin coloring.')
+    for local_vertex in range(total_local_vertices):
 
-            # Only color vertices in the surface
-            if SURFACE in vgroups[reducedMap[local_vertex]]:
-                print('Coloring vertex #: ', local_vertex)
-                vertex_color_layer.data[local_vertex].color = vsoln_colormap[TIME, global_vertex][0:3]
-            local_vertex += 1
+        # Color only the vertices in the surface
+        if surface_group[vertex_map[local_vertex]]:
+            print('Coloring vertex #: ', local_vertex)
+            color_layer.data[local_vertex].color = colormap[TIME, vertex_map[local_vertex]][0:3]
 
     #Keyframe current color
-    print("inserting keyframe.")
+    print("Inserting keyframe " + str(frame))
     bpy.ops.anim.keyframe_insert()
     
     # Update increments
@@ -178,9 +167,9 @@ for i in range(0, KEYFRAMES):
 
 # End time
 end = time.clock()
-print("Stopped at: " + str(end))
-print("Total time: " + str(end - start))
-print('Finished\n')
+print("Stopped at: " + str(end) + "seconds")
+print("Total time: " + str(end - start) + "seconds")
+print('Finished adding ' + str(frame) + "keyframes.")
 
 
 
