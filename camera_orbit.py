@@ -13,13 +13,13 @@ import bpy
 bpy.ops.object.mode_set(mode='OBJECT')
 
 # Create an empty object
-bpy.ops.object.empty_add(type='PLAIN_AXES')
+# bpy.ops.object.empty_add(type='PLAIN_AXES')
 
 # Set empty object as
 obj = bpy.data.objects['Empty']
 
 #Parent empty to object
-bpy.ops.outliner.parent_drop(child="Empty", parent="Cube")
+# bpy.ops.outliner.parent_drop(child="Empty", parent="Cube")
 
 #Parent Camera to empty
 
@@ -38,7 +38,7 @@ i = 0.0
 eval_time = 10
 
 # 360 deg = 6.283 radians
-while i < 6.3:
+while i < 10.5:
 
 	# Jump to the next keyframe location
     bpy.context.scene.frame_set(eval_time)
@@ -50,7 +50,7 @@ while i < 6.3:
     bpy.ops.anim.keyframe_insert()
 
 	#Rotate every 0.1 rads
-    i += 0.1
+    i += 0.2
 
     #1 keyframe per 10 frames
     eval_time += 10
