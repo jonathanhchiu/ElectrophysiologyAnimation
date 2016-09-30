@@ -12,26 +12,13 @@ EMISSION = 'Emission'
 OUTPUT = 'Material Output'
 
 # Time constants
-FRAME_NUM = 1                                      # Time between frames
-TIME = 0                                            # Times in colormap
-START = 0
-KEYFRAMES = 1
-
-# Time constants
-# FRAME_NUM = 1                                      # Time between frames
-# TIME = 0                                            # Times in colormap
-# START = 0
-# KEYFRAMES = 262
-
-# Time contants for 2nd job
-# FRAME_NUM = 263                                      # Time between frames
-# TIME = 262                                            # Times in colormap
-# START = 262
-# KEYFRAMES = 525
+FRAME_NUM = 264                                      # Time between frames
+TIME = 263                                            # Times in colormap
+START = 263
+KEYFRAMES = 329
 
 # Find the right place to run the job
-with open('/data/tthao/blender/EP/logs/log1.txt', 'w') as f:
-# with open('log2.txt', 'w') as f:
+with open('/data/tthao/blender/EP/logs/log4.txt', 'w') as f:
 
     # Blender constants
     scn = bpy.context.scene                             # Active scene
@@ -40,7 +27,8 @@ with open('/data/tthao/blender/EP/logs/log1.txt', 'w') as f:
     obj.select = True
     bpy.context.scene.objects.active = obj
 
-    # Filepaths
+    # Filepath
+    # TODO Change me for different colormaps!
     FILEPATH = '/data/tthao/blender/EP/500ms.npy'
 
     # Read in numpy array containing colormap
@@ -59,11 +47,9 @@ with open('/data/tthao/blender/EP/logs/log1.txt', 'w') as f:
     # Set to CUDA rendering
     f.write('Initiating CUDA rendering ...\n')
     bpy.context.user_preferences.system.compute_device_type = 'CUDA'
+    # TODO CHANGE ME TO FREE GPUS
     bpy.context.user_preferences.system.compute_device = 'CUDA_4'
     f.write('CUDA rendering initiated! ...\n')
-
-    # For the 2nd job
-    # bpy.context.user_preferences.system.compute_device = 'CUDA_1'
 
     # Check for proper vertex color layer
     f.write('Checking vertex color layer ...\n')
@@ -189,15 +175,6 @@ with open('/data/tthao/blender/EP/logs/log1.txt', 'w') as f:
                 local_vertex += 1
 
         f.write('Vertices colored: ' + str(local_vertex) + '\n')
-        #Keyframe current color
-        f.write("inserting keyframe...\n")
-        # obj.keyframe_insert("Available", group="MyNewKeyingSet")
-        # bpy.ops.anim.keyframe_insert_menu(type=1)
-        # bpy.ops.anim.keyframe_insert()
-        # bpy.ops.anim.keyframe_insert_menu()
-        # bpy.ops.anim.keyframe_insert(type='MyNewKeyingSet')
-        # obj.keyframe_insert(data_path='MyNewKeyingSet')
-        # obj.keyframe_insert(type='MyNewKeyingSet')
 
         # Update increments
         FRAME_NUM += 1
@@ -205,5 +182,5 @@ with open('/data/tthao/blender/EP/logs/log1.txt', 'w') as f:
 
     # End time
     end = time.clock()
-    f.write("Keyframe time: " + str(end - start) + '\n')
-    f.write('Finished\n')
+    f.write("Coloring frame time: " + str(end - start) + '\n')
+    f.write('Finished\n\n')
