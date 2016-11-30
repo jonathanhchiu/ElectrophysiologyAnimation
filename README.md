@@ -20,9 +20,9 @@ The voltage solution is created in terms of global vertices. However, the way we
 We will provide testfiles, including the Blender model and voltage solution colormap very soon. Stay tuned!
 
 ### Created by:
-* Jonathan Chiu @jonathanhchiu
-* Tommy Truong @ttthao
-* Chris Villongco @ctvillongco
+* Jonathan Chiu (@jonathanhchiu)
+* Tommy Truong (@ttthao)
+* Chris Villongco (@ctvillongco)
 
 ### For Inquiries:
-Please email jonathanhchiu@gmail.com, tttruong701@gmail.com, or ct
+Please email jonathanhchiu@gmail.com, tttruong701@gmail.com, or ctvillongto@gmail.com
