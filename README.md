@@ -14,7 +14,7 @@ Use Blender to animate the electrophysiology of a ventricular model with voltage
 Blender has two different methods of indexing vertices; we will regard them as global versus local indexing. Global vertices are indexed with respect to the entire 3D figure. For example, a regular cube has 8 global vertices, that can be indexed in some way. However, local vertices are indexed with respect to each face of that figure. For example, a cube has 6 faces, and each face has four local vertices. This means that a cube has (6 x 4) = 24 local vertices. In other words, a local vertex is associated with a specific face of a figure, so there can be multiple local vertices corresponding to a single global vertex (a cube has three local vertices to a single global vertex since each global vertex touches three faces).
 
 ### Why We Care:
-The voltage solution is created in terms of global vertices. However, the way we color vertices is with a Blender feature called "vertex color layer" that utilizes local vertices. Thus, we need to create a mapping from the local to global vertices. This mapping occurs in a predictable pattern: if we iterate through each "face" in "mesh.polygons" and each "global_vertex" in each "face.vertices", the order in which this is iterated corresponds exactly with the local vertices used by vertex color layers. This is how/why we create the "reducedMap" struct.
+The voltage solution is created in terms of global vertices. However, the way we color vertices is with a Blender feature called "vertex color layer" that utilizes local vertices. Thus, we need to create a mapping from the local to global vertices. This mapping occurs in a predictable pattern: if we iterate through each "face" in "mesh.polygons" and each "global_vertex" in each "face.vertices", the order in which this is iterated corresponds exactly with the local vertices used by vertex color layers.
 
 ### Try It Out:
 We will provide testfiles, including the Blender model and voltage solution colormap very soon. Stay tuned!
@@ -25,4 +25,4 @@ We will provide testfiles, including the Blender model and voltage solution colo
 * Chris Villongco (@ctvillongco)
 
 ### For Inquiries:
-Please email jonathanhchiu@gmail.com, tttruong701@gmail.com, or ctvillongto@gmail.com
+Please email jonathanhchiu@gmail.com, tttruong701@gmail.com, or ctvillongco@gmail.com for questions or requests.
